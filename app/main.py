@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Kursk 1000 API",
     description="Backend for Kursk 1000 mobile app",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
@@ -33,13 +33,20 @@ app.add_middleware(
 
 
 @app.get("/landmarks", response_model=list[LandmarkResponse])
-def list_landmarks(db: Session = Depends(get_db)) -> list[Landmark]:
-    return db.query(Landmark).order_by(Landmark.name).all()
+def list_landmarks(db: Session = Depends(get_db)) -> list[LandmarkResponse]:
+    """Все достопримечательности целиком — клиент кэширует это в Room."""
+    landmarks = db.query(Landmark).order_by(Landmark.name).all()
+    return [LandmarkResponse.from_landmark(lm) for lm in landmarks]
 
 
-@app.get("/landmark/{landmark_uuid}", response_model=LandmarkResponse)
-def get_landmark(landmark_uuid: UUID, db: Session = Depends(get_db)) -> Landmark:
+@app.get(
+    "/landmark/{landmark_uuid}",
+    response_model=LandmarkResponse,
+    responses={404: {"description": "Landmark not found"}},
+)
+def get_landmark(landmark_uuid: UUID, db: Session = Depends(get_db)) -> LandmarkResponse:
+    """Одна достопримечательность по UUID метки (регистр UUID не важен)."""
     landmark = db.get(Landmark, str(landmark_uuid).upper())
     if landmark is None:
         raise HTTPException(status_code=404, detail="Landmark not found")
-    return landmark
+    return LandmarkResponse.from_landmark(landmark)

@@ -28,7 +28,8 @@
   ],
   "gallery": [
     { "type": "image", "src": "krasnaya-ploshchad/01.jpg", "caption": "Панорама площади" },
-    { "type": "image", "src": "krasnaya-ploshchad/02.jpg", "caption": "Дом Советов" }
+    { "type": "image", "src": "krasnaya-ploshchad/02.jpg", "caption": "Дом Советов" },
+    { "type": "video", "src": "video.mp4", "caption": "Тестовое видео" }
   ],
   "public_key": ""
 }

@@ -8,7 +8,6 @@ class Landmark(Base):
 
     uuid = Column(String, primary_key=True)
     name = Column(String, nullable=False)
-    emoji = Column(String, nullable=False, default="")
     subtitle = Column(String, nullable=False, default="")   # короткий подзаголовок под названием
     year = Column(String, nullable=False, default="")
     summary = Column(Text, nullable=False, default="")      # лид-абзац (виден сразу)
@@ -20,4 +19,7 @@ class Landmark(Base):
     facts = Column(JSON, nullable=False, default=list)      # ["факт", ...]
     gallery = Column(JSON, nullable=False, default=list)    # [{"type": "image|video", "src": str, "caption": str}]
 
-    public_key = Column(Text, nullable=False, default="")   # резерв под infosec-трек (Challenge-Response)
+    # Симметричный секрет метки для защиты от спуфинга (TZ Вариант А, TOTP-подобный код).
+    # hex-строка; тот же секрет прошит в ESP32-метку. Сервер — источник правды: клиент
+    # скачивает его и кладёт в Android Keystore (в исходниках клиента секретов нет).
+    beacon_secret = Column(String, nullable=False, default="")

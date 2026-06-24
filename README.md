@@ -19,7 +19,7 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
   основной редактируемый источник; БД (`landmarks.db`) в `.gitignore` и
   пересоздаётся скриптом `seed.py`.
 - `media/` — фото и видео. Раздаются через `raw.githubusercontent.com`, в БД
-  хранятся **относительные** пути. ⚠️ Сами ассеты пока не добавлены —
+  хранятся **относительные** пути. Сами ассеты пока не добавлены —
   ожидаемую структуру и имена файлов см. в `media/README.md`; до их загрузки
   ссылки на изображения будут отдавать `404`.
 
@@ -30,12 +30,8 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 Переезд на собственный CDN — сменить одну переменную окружения, пути в БД и
 контенте не трогаются:
 
-```powershell
-$env:MEDIA_BASE_URL = "https://cdn.example.com/media"   # PowerShell
 ```
-
-```bash
-export MEDIA_BASE_URL="https://cdn.example.com/media"    # bash/zsh
+MEDIA_BASE_URL = "https://cdn.example.com/media"
 ```
 
 ## API
@@ -49,7 +45,6 @@ export MEDIA_BASE_URL="https://cdn.example.com/media"    # bash/zsh
   {
     "uuid": "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
     "name": "Знаменский собор",
-    "emoji": "⛪️",
     "subtitle": "Православный кафедральный собор · 1816–1826",
     "year": "1816",
     "summary": "Лид-абзац…",
@@ -61,30 +56,40 @@ export MEDIA_BASE_URL="https://cdn.example.com/media"    # bash/zsh
     "gallery": [
       { "type": "image", "src": "https://…/znamensky-sobor/01.jpg", "caption": "Главный фасад" }
     ],
-    "public_key": ""
+    "beacon_secret": "a1b2…64-hex-chars…ef"
   }
 ]
 ```
 
-### `GET /landmark/{uuid}`
+## Защита от спуфинга - `beacon_secret`
 
-Одна достопримечательность по UUID метки (регистр не важен). `404`, если не найдена.
+Каждая метка вещает не статический UUID, а **динамический код** (TOTP-подобный):
+`HMAC-SHA256(secret, counter)`, `counter = epochMillis / 30000`, усечённый до 8 байт, в
+BLE Service Data. Гид считает тот же HMAC и сравнивает — перехваченный код протухает за
+~30 c, склонировать будущие коды без секрета нельзя.
 
-```text
-http://localhost:8000/landmark/A1B2C3D4-E5F6-7890-ABCD-EF1234567890
-```
+Сервер — **источник правды** для секретов:
 
-> `/landmark/{uuid}` оставлен для совместимости; при полном кэшировании на
-> клиенте достаточно одного `GET /landmarks`.
+- `beacon_secret` (hex, 32 байта) отдаётся в `/landmarks`. Клиент кладёт его в **Android
+  Keystore** как неэкспортируемый ключ (в исходниках клиента секретов нет - требование ТЗ) и
+  дальше проверяет коды офлайн. Тот же секрет должен быть прошит в метку, которая
+  вещает код.
+- Откуда берётся секрет (приоритет в `seed.py`):
+  1. явный `"beacon_secret"` в `content/<slug>.json` (если задан оператором — им же прошивают ESP32);
+  2. иначе — из `content/beacon_secrets.json` (gitignore, авто-генерация, **стабилен между
+     пересевами** → прошитую метку не «уводит»); этот файл и читают, чтобы узнать, что шить в ESP32;
+  3. иначе — генерируется новый случайный и дописывается в этот файл.
+- Схема симметричная, поэтому секрет уезжает на клиент → **раздавайте API по HTTPS в проде**
+  (поставьте reverse-proxy с TLS перед uvicorn). По демо-LAN допустимо HTTP.
 
-## Поле `public_key`
-
-Зарезервировано под infosec-трек (Challenge-Response): публичный ключ
-достопримечательности для проверки подписи метки. Пока пустое.
+Эмулятор метки в Android-приложении тянет тот же секрет с этого API и подписывает им код —
+служит программной заменой ESP32 для демо «атака vs защита».
 
 ## Добавить достопримечательность
 
-1. Создать `content/<slug>.json` (UUID, name, emoji, subtitle, year, summary,
-   cover_image, sections, facts, gallery, public_key).
+1. Создать `content/<slug>.json` (UUID, name, subtitle, year, summary,
+   cover_image, sections, facts, gallery). `beacon_secret` указывать не
+   обязательно — `seed.py` сгенерирует и сохранит его (см. раздел про Вариант А).
 2. Положить медиа в `media/<slug>/…` с теми же именами, что в JSON.
 3. `python seed.py`.
+4. Прошить в метку секрет этого UUID из `content/beacon_secrets.json`.

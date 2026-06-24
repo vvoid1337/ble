@@ -1,11 +1,10 @@
 {
   "uuid": "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
   "name": "Знаменский собор",
-  "emoji": "⛪️",
   "subtitle": "Православный кафедральный собор · 1816–1826",
   "year": "1816",
   "summary": "Знаменский кафедральный собор — главный православный храм Курска и один из символов города. Построен в первой половине XIX века в стиле классицизма на территории Знаменского монастыря в память об освобождении Курска от польско-литовских войск в 1612 году.",
-  "cover_image": "znamensky-sobor/cover.jpg",
+  "cover_image": "znamensky-sobor/02.jpg",
   "sections": [
     {
       "title": "История",
@@ -29,7 +28,5 @@
   "gallery": [
     { "type": "image", "src": "znamensky-sobor/01.jpg", "caption": "Главный фасад с портиком" },
     { "type": "image", "src": "znamensky-sobor/02.jpg", "caption": "Купол собора" },
-    { "type": "video", "src": "video.mp4", "caption": "Тестовое видео" }
-  ],
-  "public_key": ""
+  ]
 }

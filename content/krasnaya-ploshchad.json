@@ -1,11 +1,10 @@
 {
   "uuid": "B2C3D4E5-F6A7-8901-BCDE-F12345678901",
   "name": "Красная площадь",
-  "emoji": "🏛️",
   "subtitle": "Главная площадь Курска",
   "year": "1782",
   "summary": "Красная площадь — центральная и главная площадь Курска, сформированная по регулярному плану города конца XVIII века. На ней проходят парады, городские праздники и торжества; вокруг расположены ключевые административные и исторические здания города.",
-  "cover_image": "krasnaya-ploshchad/cover.jpg",
+  "cover_image": "krasnaya-ploshchad/01.jpg",
   "sections": [
     {
       "title": "Происхождение",
@@ -29,7 +28,5 @@
   "gallery": [
     { "type": "image", "src": "krasnaya-ploshchad/01.jpg", "caption": "Панорама площади" },
     { "type": "image", "src": "krasnaya-ploshchad/02.jpg", "caption": "Дом Советов" },
-    { "type": "video", "src": "video.mp4", "caption": "Тестовое видео" }
-  ],
-  "public_key": ""
+  ]
 }

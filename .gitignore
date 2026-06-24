@@ -2,3 +2,4 @@ __pycache__/
 *.py[cod]
 landmarks.db
 tz.md
+content/beacon_secrets.json

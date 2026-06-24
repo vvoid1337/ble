@@ -17,7 +17,6 @@ class MediaItem(BaseModel):
 class LandmarkResponse(BaseModel):
     uuid: str
     name: str
-    emoji: str
     subtitle: str = ""
     year: str = ""
     summary: str = ""
@@ -25,7 +24,9 @@ class LandmarkResponse(BaseModel):
     sections: list[Section] = []
     facts: list[str] = []
     gallery: list[MediaItem] = []
-    public_key: str = ""
+    # hex-секрет метки (TZ Вариант А): клиент кладёт его в Keystore и проверяет динамический
+    # код. Симметричная схема => секрет уезжает на клиент (по HTTPS в проде).
+    beacon_secret: str = ""
 
     @classmethod
     def from_landmark(cls, lm) -> "LandmarkResponse":
@@ -56,7 +57,6 @@ class LandmarkResponse(BaseModel):
         return cls(
             uuid=lm.uuid,
             name=lm.name,
-            emoji=lm.emoji,
             subtitle=lm.subtitle or "",
             year=lm.year or "",
             summary=lm.summary or "",
@@ -64,5 +64,5 @@ class LandmarkResponse(BaseModel):
             sections=sections,
             facts=[str(f) for f in (lm.facts or [])],
             gallery=gallery,
-            public_key=lm.public_key or "",
+            beacon_secret=lm.beacon_secret or "",
         )
